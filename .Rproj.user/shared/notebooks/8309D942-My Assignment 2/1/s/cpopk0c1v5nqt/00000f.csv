@@ -1,0 +1,2 @@
+"0","meta.csv$Pub.year.IF <- meta.csv$Pub.year.IF %>% as.numeric()"
+"0","meta.csv$X2017.IF <- meta.csv$X2017.IF %>% as.numeric()"

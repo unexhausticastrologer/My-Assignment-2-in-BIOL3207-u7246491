@@ -1,0 +1,1 @@
+"0","df %>% group_by(sex) %>% mutate(difference_from_mean_by_sex = mass - mean(mass)) %>% ggplot(aes(x=label,y=difference_from_mean_by_sex,fill=sex)) + geom_col() + ggtitle(""Difference from sex-specific mean"") + theme(plot.title = element_text(hjust = 0.5))"

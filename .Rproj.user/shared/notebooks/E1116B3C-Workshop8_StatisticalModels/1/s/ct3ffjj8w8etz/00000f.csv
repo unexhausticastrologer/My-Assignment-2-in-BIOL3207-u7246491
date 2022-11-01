@@ -1,0 +1,3 @@
+"0","df_numeric <- df %>% mutate(sex = as.numeric(ifelse(sex==""FEMALE"",0,1)))"
+"0","corr_val <- cor(df_numeric$mass,df_numeric$sex)"
+"0","R_square <- corr_val^2"

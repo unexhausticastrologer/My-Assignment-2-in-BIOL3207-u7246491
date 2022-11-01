@@ -1,0 +1,2 @@
+"0","meta.rm <- escalc(measure=""ROM"", m1i=ctrl.mean, m2i=oa.mean, sd1i=ctrl.sd, sd2i=oa.sd, n1i=ctrl.n, n2i=oa.n, var.names = c(""LRR"", ""LRR_var""), data=meta.all) %>% drop_na() %>% subset(LRR_var > 10)"
+"2","Warning: 产生了NaNs"

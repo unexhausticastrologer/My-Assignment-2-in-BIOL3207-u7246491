@@ -1,0 +1,21 @@
+"0","lm0 <- lm(mass ~ 1, data = df)"
+"0","lm0"
+"1","
+Call:
+"
+"1",""
+"1","lm(formula = mass ~ 1, data = df)"
+"1",""
+"1","
+
+"
+"1","Coefficients:
+"
+"1","(Intercept)  "
+"1","
+"
+"1","      24.39  "
+"1","
+"
+"1","
+"

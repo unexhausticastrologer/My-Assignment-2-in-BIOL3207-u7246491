@@ -1,0 +1,2 @@
+"0","age_sex_trt_df_long <- pivot_longer(age_sex_trt_df,cols = c(""before"",""after""),names_to=""time"",values_to=""mass"") %>% mutate(time = as_factor(time))"
+"0","head(age_sex_trt_df_long)"

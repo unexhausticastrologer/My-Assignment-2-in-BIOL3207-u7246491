@@ -1,0 +1,4 @@
+"0","tt <- matrix(c(n_mice/4,n_mice/4,n_mice/4,n_mice/4),2,2)"
+"0","colnames(tt) <- c(""CONTROL"",""TREATMENT"")"
+"0","rownames(tt) <- c(""FEMALE"",""MALE"")"
+"0","kable(tt)"

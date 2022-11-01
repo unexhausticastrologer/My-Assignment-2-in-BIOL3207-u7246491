@@ -1,0 +1,8 @@
+"0","st.sum <- st.sum %>% mutate(species=case_when(species == ""acantho"" ~ ""Acanthochromis polyacanthus"","
+"0","                                              species == ""ambon"" ~ ""Pomacentrus amboinensis"","
+"0","                                              species == ""chromis"" ~ ""Chromis atripectoralis"","
+"0","                                              species == ""humbug"" ~ ""Dascyllus aruanus"","
+"0","                                              species == ""lemon"" ~ ""Pomacentrus moluccensis"","
+"0","                                              species == ""whitedams"" ~ ""Dischistodus perspicillatus""),"
+"0","                            treatment=case_when(treatment == ""CO2"" ~ ""oa"","
+"0","                                                treatment == ""control"" ~ ""ctrl""))"

@@ -1,0 +1,2 @@
+"0","sex_specific_means <- df %>% group_by(sex) %>% summarise(val = mean(mass)) %>% pull(val)"
+"0","df %>% add_column(one = 1) %>% ggplot(aes(x=one,y=mass,colour=sex)) + geom_point() + geom_hline(yintercept=sex_specific_means[1],colour=""red"") + geom_hline(yintercept=sex_specific_means[2],colour=""turquoise"")"

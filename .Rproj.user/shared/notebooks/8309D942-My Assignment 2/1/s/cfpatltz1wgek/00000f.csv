@@ -1,0 +1,2 @@
+"0","oa.csv <- read.csv(""OA_activitydat_20190302_BIOL3207.csv"", stringsAsFactors = TRUE) %>% drop_na()"
+"0","head(oa.csv)"

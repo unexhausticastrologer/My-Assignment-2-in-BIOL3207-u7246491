@@ -1,0 +1,350 @@
+---
+title: "Dimension Reduction and Visualisation"
+author: "BIOL 3207/6207"
+date: "2022-10-21"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Preliminaries
+
+```{r message = FALSE, warning = FALSE}
+library(tidyverse)
+library(palmerpenguins)
+library(GGally)
+library(knitr)
+```
+
+Long ago, we engaged in a broad survey of ggplot functionality along with some hands-on experience making a variety of plots. We also worked through some visualisation exercises in the context of statistical inference and sampling. These foundational activities allowed us to combine the two through active interrogation of a penguin data set. Today we revisit that data set in the context of dimension reduction, and specifically principal component analysis (PCA). As usual, this workbook is meant to complement the tutorial lecture with additional details and hands-on experience.
+
+```{r}
+# We can use glimpse() to remind ourselves of the structure of the penguin data
+glimpse(penguins)
+```
+
+```{r}
+# We can additionally use summary() to get a distributional overview of the variables
+summary(penguins)
+```
+
+You will see, and may even recall, that there are 344 observations and 8 columns. In particular for today, there are four biometric measurements for each penguin: bill length (mm), bill depth (mm), flipper length (mm) and body mass (g).
+
+Just for fun, let's create a table to summarise the number of penguins by species, island and year. Note the use of `pivot_wider()` to reshape the table to suit. Some of you may have previously used this solution to report the mutations in the *E. coli* data.
+
+```{r}
+# Note the use of .groups = "drop" -- what does that do?
+
+penguins %>%
+group_by(species, island, year) %>%
+summarise(count = n(), .groups = "drop") %>%
+pivot_wider(names_from = c("species"),
+values_from = "count")
+```
+
+Are you happy with the NA values? They should be zeros, right? Let's make that change below.
+
+```{r}
+penguins %>%
+group_by(species, island, year) %>%
+summarise(count = n(), .groups = "drop") %>%
+pivot_wider(names_from = c("species"),
+values_from = "count") %>% mutate_all(~replace(., is.na(.), 0))
+```
+We can see that Adelie penguins are present on all three islands, while Chinstrap and Gentoo species are only on a single island.
+
+We can also summarise the data by species and sex.
+
+```{r}
+penguins %>%
+group_by(species, sex) %>%
+summarise(count = n(), .groups = "drop")
+```
+These NA values shouldn't be zeros -- they just shouldn't be there. Can you address this using the same solution as above? Do you remember what we did previously?
+
+```{r}
+penguins %>% filter(complete.cases(.)) %>%
+group_by(species, sex) %>%
+summarise(count = n(), .groups = "drop")
+```
+
+### Examining the Data
+
+We have four biometric measurements, and one could imagine having many more. Suppose that we wish to characterise penguin morphology with fewer variables. If the biometric measurements are correlated, then we may be able to usefully summarise the data into fewer dimensions.
+
+For starters, let's examine the pairwise correlations between each pair of biometric variables:
+
+```{r message = FALSE, warning = FALSE}
+penguins %>%
+select(bill_length_mm:body_mass_g) %>%
+ggpairs()
+```
+
+This was a key figure in our previous study of the penguin data set. We observe multimodal distributions in each measurement as well as clusters of points in each data cloud. As before, we can also colour the distributions/points by species:
+
+```{r message = FALSE, warning = FALSE}
+penguins %>%
+select(species, bill_length_mm:body_mass_g) %>%
+ggpairs(aes(col = species), columns = 2:5)
+```
+
+From this, we can see that within each species, each pair of measurements are positively correlated, indicating size variation within species.
+
+We also notice shape variation between species; for example, Gentoo penguins tend to have longer flippers but shallower bills in comparison to the other two species.
+
+To the extent that two measurements are correlated, the information contained in them is redundant. As an example, let's consider flipper length and body mass.
+
+```{r warning = FALSE}
+penguins %>%
+ggplot(aes(x = flipper_length_mm, y = body_mass_g))+
+geom_point()+
+theme_bw()
+```
+
+We see from this plot that flipper length and body mass are highly correlated – both are measures of penguin size. Therefore, a single measure representing penguin size can substitute well for the two measurements. Let's demonstrate that and then discuss it in detail.
+
+Following the rationale outlined in the tutorial, we will first remove the NAs and standardise the variables:
+
+```{r warning = FALSE}
+my_dat <- penguins %>% na.omit() %>% mutate(across(where(is.numeric),scale,center=TRUE))
+ggplot(my_dat,aes(x = flipper_length_mm, y = body_mass_g)) + geom_point() + theme_bw()
+```
+
+We've seen versions the above plot before -- have you noticed that the axes have different scales even after standardisation? That is to say, the visual distance of a unit increase on the x axis is larger than that on the y axis. This is not problematic *except* when you want to perceive angles, in which case the differential scales will distort the picture. To address this, we will use `coord_fixed(ratio = 1)` to lock the aspect ratio.
+
+
+```{r warning = FALSE}
+my_dat <- penguins %>% na.omit() %>% mutate(across(where(is.numeric),scale,center=TRUE))
+ggplot(my_dat,aes(x = flipper_length_mm, y = body_mass_g)) + geom_point() + theme_bw() + coord_fixed(ratio = 1)
+```
+
+### PCA by Analogy to Linear Regression
+
+Now, without actually doing a PCA, let's try and picture what it is doing.
+
+```{r}
+my_dat %>% mutate(pc1_val = flipper_length_mm/2 + body_mass_g/2) %>% ggplot(aes(x = flipper_length_mm, y = body_mass_g)) + geom_segment(aes(xend = pc1_val, yend = pc1_val), alpha = .2) + geom_point(shape = 1) +
+  geom_point(aes(x = pc1_val,y = pc1_val)) + theme_bw() + coord_fixed(ratio = 1) + geom_abline(slope = 1, intercept = 0, col = "red")
+```
+
+Let's unpack this carefully. Start with the red line, which in the tutorial was described as rotating our x axis counterclockwise by 45 degree. This new axis is **PC1**, our first principal component. The hollow points on the graph are the original (x,y) coordinates; that is, (flipper_length_mm, body_mass_g). As shown, each point (x,y) is connected by a line segment to a filled point which represents the closest point to it on the red line. This is called an *orthogonal projection*. By "orthogonal", we simply mean perpendicular: the line segments intersect the red line at a right angle. To understand the use of word "projection", imagine the shadow cast when a light source is pointed from behind the hollow point in the direction of the line segment. Viewed this way, the filled points are the shadow of their hollow counterpoints. We can project the points onto any line, but this one happens to be the best in the sense that it minimises the distance between the original points and their corresponding shadows.
+
+Does this remind you at all of linear regression? Let's create the analogous figure, with the regression line in blue and the predicted values as squares.
+
+```{r message = FALSE}
+peng <- penguins %>% filter(complete.cases(.)) %>% mutate(across(where(is.numeric),scale,center=TRUE))
+lm1 <- lm(body_mass_g ~ flipper_length_mm,data=peng)
+peng$predicted <- predict(lm1)   # Save the predicted values
+peng$residuals <- residuals(lm1)
+ggplot(peng, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  geom_segment(aes(xend = flipper_length_mm, yend = predicted), alpha = .2) + 
+  geom_point(shape = 1) +
+  geom_point(aes(y = predicted),shape=15) + theme_bw() + coord_fixed(ratio = 1)
+```
+
+What distinguishes this plot from the previous one? The hollow points -- that is, the original scaled data -- are identical in both instances. Both plots show "best fit" lines; however, the lines are different because "best" is not consistently defined. In the regression case, we care about the residuals as indicated by the vertical lines connecting observed and predicted values. In the PCA case, we care about distances as indicated by the perpendicular lines connecting observed and predicted values. In other words, regression tries to best approximate y with x and is only concerned distance in the y dimension. PCA tries to approximate the point (x,y) and is concerned with Euclidean distance.
+
+### PCA in 2 dimensions
+
+Next let's perform a principal component analysis using `prcomp()` and examine what it returns.
+
+```{r}
+pca1 <- prcomp(my_dat %>% select(flipper_length_mm, body_mass_g), scale = TRUE)
+pca1_scores <- pca1$x %>% as_tibble()
+pca1_loadings <- pca1$rotation %>% as_tibble() %>% mutate(names = rownames(pca1$rotation))
+```
+
+Let's start with the *loadings* stored in `pca1$rotation`. Formally, `pca1$rotation` is a *rotation matrix* that describes how the axes are rotated in the principal component analysis. Alternatively, and perhaps easier, you can interpret each column as a new (derived) variable constructed as a linear combination of the original variables. Interpreted this way, the values are the loadings on each original variable as part of the linear combination. For example, you can see for PC1 that the loadings on both flipper_length_mm and body_mass_g are sqrt(2)/2.
+
+```{r}
+head(pca1_loadings)
+```
+Next let's look at the *scores* stored in `pca1$x`. You'll notice that this has the same dimensions as the original data. That's because the scores for each penguin are simply its new coordinates.
+
+```{r}
+head(pca1_scores)
+```
+
+Let's try something ambitious and simultaneously plot the original data and the PCA scores. We'll use blue for the original data, red for the scores, and use black arrows to connect values for the same penguin. The orange lines are meant to illustrate the rotation of the x axis to best fit the data, thus defining PC1.
+
+```{r}
+plot_tib_old <- my_dat %>% select(flipper_length_mm,body_mass_g) %>% add_column(ID = 1:333,set = rep("old",333))
+names(plot_tib_old) = c("x","y","ID","set")
+plot_tib_new <- pca1_scores %>% add_column(ID = 1:333,set = rep("new",333))
+names(plot_tib_new) = c("x","y","ID","set")
+plot_tib <- bind_rows(plot_tib_old,plot_tib_new)
+ggplot(plot_tib,aes(x=x,y=y,colour=set,group=ID)) + geom_point(alpha=0.9) + geom_line(alpha=0.2,colour="black",arrow = arrow(length=unit(0.2,"cm"), ends="last", type = "closed")) + geom_abline(slope = 1, intercept = 0, col = "orange", size=2, alpha=0.5) + geom_abline(slope = 0, intercept = 0, col = "orange", size=2, alpha=0.5)
+```
+
+Let's use `summary()` on the `prcomp()` object and see what it returns.
+
+```{r}
+summary(pca1)
+```
+
+Interesting. So the summary returns information on the importance of PC1 and PC2. This importance turns out to be relative, and once again related to variance. Let's look at the variance of the scores, arbitrarily rounded to 3 decimal places.
+
+```{r}
+pca1_scores %>% var() %>% round(3)
+```
+
+And, for comparison, let's do the same with the scaled original data:
+
+```{r}
+my_dat %>% select(flipper_length_mm,body_mass_g) %>% var() %>% round(3)
+```
+
+These are actually *variance-covariance* matrices. The diagonal entries correspond to the variance of the variable indicated both by the row and column. Likewise, the off-diagonal entries correspond to the covariance between variable pairs. What is covariance? Well, with standardised variables, it is the same as correlation:
+
+```{r}
+cor(my_dat$flipper_length_mm,my_dat$body_mass_g)
+```
+
+Having scaled the original data, we knew that each variable would have variance 1. We can think of the sum of the variances as the *total variance*, which with two scaled variables is 1+1=2. Now examine the total variance for the PC1 and PC2 -- it is still 2, except that now the variances of PC1 and PC2 are very different. In fact, PC1 and PC2 are the *linear combinations* of maximum and minimum variance, respectively. By linear combination, we mean functions of the original variables of the form a × flipper_length_mm + b × body_mass_g, here subject to the constraint that a^2 + b^2 = 1. (That last bit should remind you of the tutorial where you were introduced to the length of unit vectors.) The values of a and b are exactly the loadings from above.
+
+As is often the case, variance here is a measure of signal. Dimension reduction, as a compression, leads to signal loss, and the goal is to keep that loss to a minimum. Thus, the linear combination of maximum variance is also the best one-dimensional representation of the data in terms of signal loss. This is expressed as proportion of variance, which you will have seen above in the summary. The proportion of variance explained by PC1 was 0.9365, which is the same as 1.873/2 (variance of PC1 over total variance).
+
+### PCA in >2 dimensions
+
+Now we’ll project all four measurements into a 2-dimensional subspace and interpret the 2-dimensional representation of the data:
+
+```{r}
+pca2 <- prcomp(my_dat %>% select(bill_length_mm: body_mass_g),scale=TRUE)
+```
+
+The scores are once again of the same dimensions as the original data:
+
+```{r}
+pca2_scores <- pca2$x %>% as_tibble()
+head(pca2_scores)
+```
+
+The scores PC1 - PC4 are a linear transformation of the original data in 4 dimensions. If we plot only the first 2 dimensions, how “true” is this representation of the original data? Equivalently, how much information is lost by keeping only the first 2 dimensions?
+
+```{r}
+summary(pca2)
+```
+
+PC1 “explains 69% of the variation” in the original data. PC2 explains 19% of the variation in the original data. Together they represent 88% of the variation.
+
+This suggests that the projection of the data onto the first 2 PC-dimensions is a good representation of the original data. Equivalently,
+
+* The scores are “close” to the original data
+
+* Penguins that have similar morphology have similar PC1/2 scores
+
+* The 4-dimensional cloud of data resembles an “elongated pancake” in 4-dimensional space
+
+Let’s look at the loadings (“rotation”) of pca2.
+
+```{r}
+pca2_loadings <- round(pca2$rotation,3) %>% as_tibble %>% mutate(names = rownames(pca2$rotation))
+pca2_loadings
+```
+
+When variables have similar loadings, they are highly correlated with one another, e.g. flipper length and body mass. As was the case with a^2 + b^2 = 1 before, the sum of the the squared loadings of each row is equal to one. Variables with high weight values in PC3 and/or PC4 will not be well-represented if only PC1 and PC2 are used. Note also that when measurements are independent, they load onto different PCs
+
+Let's look at the plot of PC2 versus PC1. This *biplot* is the most common visual representation of PCA and represents a reduction to two dimensions. Here it happens to be particularly good approximation to the higher dimensional data.
+
+```{r warning=FALSE}
+ggplot(pca2_scores, aes(PC1, PC2))+
+geom_point()+
+geom_segment(data = pca2_loadings,
+aes(x = 0, y = 0, xend = PC1, yend = PC2),
+arrow = arrow(),
+colour = "red") +
+ylim(-2,2)+
+annotate("text", x = pca2_loadings$PC1, y = pca2_loadings$PC2,
+label = pca2_loadings$names,
+colour = "red", size = 3,
+vjust = 1, hjust = -0.2) +
+theme_bw()
+```
+
+Finally, let's adjust and add to the plot. We'll scale the principal components, just as we once did to the original data. Then we'll add in the species data.
+
+```{r}
+pca2_scores2 <- pca2_scores %>% mutate(PC1 = PC1/pca2$sdev[1], PC2 = PC2/pca2$sdev[2], species = my_dat$species, sex = my_dat$sex, island = my_dat$island)
+
+ggplot(pca2_scores2, aes(PC1, PC2, col = species)) + geom_point() + geom_segment(data = pca2_loadings, aes(x = 0, y = 0, xend = PC1, yend = PC2),
+arrow = arrow(), colour = "black") + annotate("text", x = pca2_loadings$PC1, y = pca2_loadings$PC2, label = pca2_loadings$names, colour = "black", size = 3, vjust = 1, hjust = -0.2) + theme_bw()
+```
+
+What does this biplot tell us about our data? The Gentoo species are distinguish by their larger size: they are heavier and have longer flippers than their counterparts. Bill shape also distinguishes the species: Adelie and Chinstrap have different length bills, whereas both have deeper bills when compared with Gentoo.
+
+PCA is useful in a number of contexts, because often you get a substantial proportion of variance explained in the first two or three components even in very high dimensional space.
+
+* PCA helps you visualise the data
+
+* PCA can remove a lot of redundancy/noise, so you might use the first n components in subsequent analyses (e.g regression).
+
+* PCA can help identify unwanted noise, e.g. batch effects.
+
+Some comments/caveats:
+
+* PCA takes continuous numeric data (not factors etc.)
+
+* PCA assumes linear relationships between variables.
+
+* You may need to transform the data (e.g. log) before doing PCA.
+
+* PCA requires centered data and generally benefits from scaling; `prcomp()` does the centering by default and can scale.
+
+### Application to Assignment 1 Data
+
+Let's attempt to use PCA on the data from Assignment 1. We'll use as our starting point the tibble that you (should have) made from the messy Excel file.
+
+```{r}
+assignment1 <- read_csv("Assignment1_tibble.csv") %>% mutate(Site_ID = factor(Site_ID))
+head(assignment1)
+```
+
+We'll treat Site_ID as a factor, but we will keep Year as numeric. While Year could be treated as a factor, because it is ordered, there is some sense in including it as numeric input to the PCA. 
+
+```{r}
+pca_assignment1 <- prcomp(assignment1 %>% select_if(is.numeric), scale = TRUE)
+summary(pca_assignment1)
+```
+
+Unlike the penguins example, here the variance is fairly evenly distributed across the PCs. Dimension reduction will lead to signal loss: reduction to 2D will cost more than 43% of the variance.
+
+Nevertheless, let's look at a plot of PC2 versus PC1 with the factors annotated.
+
+```{r}
+pca_assignment1_scores <- pca_assignment1$x %>% as_tibble()
+ggplot(pca_assignment1_scores %>% add_column(site = factor(assignment1$Site_ID),species=assignment1$Species), aes(x=PC1, y=PC2,colour=site,shape=species)) + geom_point()
+```
+
+There appears to be a gradient across sites on PC1. 
+
+Finally, we'll combine the PCs, factors, and `ggpairs()` to get a powerful overview of the data in a single figure.
+
+```{r message=FALSE}
+pca_assignment1_scores %>% add_column(site = factor(assignment1$Site_ID),species=assignment1$Species) %>% ggpairs(aes(colour=site,shape=species,alpha=0.2),columns=1:4)
+```
+
+The plot of PC4 versus PC1 is interesting, as are the site-specific correlations:
+
+```{r}
+ggplot(pca_assignment1_scores %>% add_column(site = factor(assignment1$Site_ID),species=assignment1$Species), aes(x=PC1, y=PC4,colour=site,shape=species)) + geom_point()
+```
+
+Let's look at the loadings to learn what comprises PC1 and PC4.
+
+```{r}
+pca_assignment1_loadings <- pca_assignment1$rotation %>% as_tibble() %>% mutate(names = rownames(pca_assignment1$rotation))
+pca_assignment1_loadings
+```
+
+It appears that both Range and Weight are the dominant contributors to both PC1 and PC4 -- perhaps we should pay attention to the relationship between Range, Weight and Site?
+
+```{r}
+ggplot(assignment1,aes(x=Weight,y=Range,colour=Site_ID)) + geom_point() + geom_smooth(method="lm")
+```
+
+And so Range shows a consistent decrease with Weight across each site.

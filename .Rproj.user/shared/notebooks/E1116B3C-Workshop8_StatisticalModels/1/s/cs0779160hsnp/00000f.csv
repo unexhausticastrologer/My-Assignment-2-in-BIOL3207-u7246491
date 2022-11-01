@@ -1,0 +1,1 @@
+"0","ggplot(df,aes(x=label,y=mass)) + geom_col() + ggtitle(""Masses of mices :-)"") + theme(plot.title = element_text(hjust = 0.5))"

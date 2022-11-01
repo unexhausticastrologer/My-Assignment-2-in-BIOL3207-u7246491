@@ -1,0 +1,1 @@
+"0","df %>% group_by(sex) %>% mutate(squared_difference_from_mean = (mass - mean(mass))^2) %>% group_by() %>% summarise(sum_of_squared_difference_from_mean = (sum(squared_difference_from_mean)))"

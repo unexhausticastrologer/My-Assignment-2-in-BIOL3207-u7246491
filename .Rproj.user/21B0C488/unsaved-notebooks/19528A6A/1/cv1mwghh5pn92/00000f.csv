@@ -1,0 +1,2 @@
+"0","smd.rma.reml <- rma(yi,vi,method = 'REML',data = smd_meta)"
+"0","forest(smd.rma.reml)"

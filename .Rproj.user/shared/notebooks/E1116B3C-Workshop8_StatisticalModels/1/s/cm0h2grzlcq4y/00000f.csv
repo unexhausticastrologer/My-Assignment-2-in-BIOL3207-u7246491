@@ -1,0 +1,8 @@
+"0","# Install and load the two packages we need. Remember to install these first."
+"0","library(lme4)"
+"2","Warning: 程辑包‘lme4’是用R版本4.1.2 来建造的"
+"0","library(metafor)"
+"2","Warning: 程辑包‘metafor’是用R版本4.1.2 来建造的"
+"2","Warning: 程辑包‘metadat’是用R版本4.1.2 来建造的"
+"0","library(lmerTest)"
+"0",""

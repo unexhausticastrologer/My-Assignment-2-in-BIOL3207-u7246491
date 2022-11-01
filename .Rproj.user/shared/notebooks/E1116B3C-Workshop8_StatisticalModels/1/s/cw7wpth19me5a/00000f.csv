@@ -1,0 +1,2 @@
+"0","noise <- 2"
+"0","two_factor_interaction_maybe <- tibble(mouse_id = 1:n_mice, sex = c(rep(""FEMALE"",n_mice/2),rep(""MALE"",n_mice/2)), trt = rep(c(rep(""CONTROL"",n_mice/4),rep(""TREATMENT"",n_mice/4)),2)) %>% mutate(mass = ifelse(sex == ""FEMALE"",0,4)) %>% mutate(mass = ifelse(trt == ""CONTROL"",mass,ifelse(sex == ""FEMALE"",mass+4,mass-4))) %>% mutate(mass = mass + rnorm(n_mice,0,noise))"

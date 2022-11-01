@@ -1,0 +1,4 @@
+"0","# Run this code block to observe that the average difference from mean is zero."
+"0","# --- Note that average and mean are the same and used interchangeably"
+"0","# --- using the function round to remove very small rounding errors"
+"0","df %>% mutate(difference_from_mean = mass - mean(mass)) %>% group_by() %>% summarise(average_difference_from_mean = round(mean(difference_from_mean),15))"

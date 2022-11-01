@@ -1,0 +1,5 @@
+"0","sd_of_cage_effects <- 5"
+"0","cage_effects <- rnorm(10,0,sd_of_cage_effects)"
+"0","# Take a look at this line of code -- do you follow what it's doing?"
+"0","cages_paired_age_sex_trt_df <- cages_paired_age_sex_trt_df %>% mutate(change_in_mass = change_in_mass + cage_effects[as.numeric(cage)])"
+"0","ggplot(cages_paired_age_sex_trt_df,aes(x = cage,y = change_in_mass)) + geom_boxplot();"

@@ -1,0 +1,1 @@
+"0","df %>% add_column(one = 1) %>% ggplot(aes(x=one,y=mass)) + geom_point(alpha = 0.4) + geom_hline(yintercept=mean(df$mass), colour = ""red"")"

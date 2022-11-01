@@ -1,0 +1,5 @@
+"0","# sort the values"
+"0","df$mass <- sort(df$mass,decreasing=FALSE)"
+"0","# add labels (1,2,...) as the first column"
+"0","df <- add_column(df,label = 1:n_mice,.before=1)"
+"0","head(df)"

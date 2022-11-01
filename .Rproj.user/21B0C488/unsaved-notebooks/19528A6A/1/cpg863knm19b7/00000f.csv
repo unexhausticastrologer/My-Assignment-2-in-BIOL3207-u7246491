@@ -1,0 +1,5 @@
+"0","smd_meta <- escalc(measure=""SMD"", m1i=m1, m2i=m2, sd1i=sd1, sd2i=sd2, n1i=n1, n2i=n2,"
+"0","                   data=smd_meta)"
+"0","smd_meta"
+"1","
+"

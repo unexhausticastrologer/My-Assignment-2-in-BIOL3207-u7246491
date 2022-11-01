@@ -1,0 +1,1 @@
+"0","ggplot(meta.lrr, aes(y = LRR, x = LRR_var)) + geom_point() + geom_smooth(method = lm)"

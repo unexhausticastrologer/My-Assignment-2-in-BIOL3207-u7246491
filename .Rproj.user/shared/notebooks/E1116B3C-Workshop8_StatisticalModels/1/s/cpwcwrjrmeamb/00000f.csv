@@ -1,0 +1,2 @@
+"0","df <- add_column(df,sex = factor(c(rep(""FEMALE"",n_mice/2),rep(""MALE"",n_mice/2))))"
+"0","head(df)"

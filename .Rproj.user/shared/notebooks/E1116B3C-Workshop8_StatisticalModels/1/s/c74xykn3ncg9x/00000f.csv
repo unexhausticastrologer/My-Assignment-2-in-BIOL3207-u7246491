@@ -1,0 +1,23 @@
+"0","lm1 <- lm(mass ~ sex, data = df)"
+"0","lm1"
+"1","
+Call:
+"
+"1",""
+"1","lm(formula = mass ~ sex, data = df)"
+"1",""
+"1","
+
+"
+"1","Coefficients:
+"
+"1","(Intercept)  "
+"1","    sexMALE  "
+"1","
+"
+"1","     20.893  "
+"1","      6.993  "
+"1","
+"
+"1","
+"

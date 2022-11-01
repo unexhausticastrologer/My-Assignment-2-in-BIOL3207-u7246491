@@ -1,0 +1,1 @@
+"0","ggplot(two_factor_interaction,aes(x = interaction(sex,trt), y = mass, colour = interaction(sex,trt))) + geom_violin() + geom_point(size=2,alpha=0.5) + stat_summary(fun = ""mean"", geom = ""crossbar"", width = 0.5) + theme(axis.title.x=element_blank(),legend.position = ""none"")"

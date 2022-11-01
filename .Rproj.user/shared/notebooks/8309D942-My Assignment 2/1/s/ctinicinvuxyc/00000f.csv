@@ -1,0 +1,3 @@
+"0","st.sum <- ddply(oa.csv, c('treatment', ""species""), summarize, n = length(activity), mean = mean(activity), sd = sd(activity))"
+"0","ft <- flextable(st.sum)"
+"0","ft"

@@ -1,0 +1,2 @@
+"0","tib <- tibble(a = c(rep(-1,99),99),b = rnorm(100,0,1)) %>% mutate(b = 10*(b-mean(b))/sd(b))"
+"0","tib %>% pivot_longer(1:2) %>% mutate(name = factor(name)) %>% ggplot(aes(x=value,fill=name)) + geom_histogram() + facet_wrap(~name)"
