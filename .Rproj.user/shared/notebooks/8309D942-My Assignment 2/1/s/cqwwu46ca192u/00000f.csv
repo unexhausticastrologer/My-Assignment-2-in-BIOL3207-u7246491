@@ -1,1 +1,0 @@
-"0","st.order <- pivot_wider(data = st.sum, names_from = ""treatment"", values_from = c(""n"", ""mean"", ""sd"") ,names_sep = ""."")"

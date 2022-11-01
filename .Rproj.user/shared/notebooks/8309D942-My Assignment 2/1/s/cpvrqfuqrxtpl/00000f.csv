@@ -1,4 +1,0 @@
-"0","ggplot(meta.lrr, aes(y = LRR, x = Year..online., size = 1/sqrt(LRR_var))) + geom_point(alpha = 0.3) +"
-"0","    geom_smooth(method = lm, col = ""red"", show.legend = FALSE) + labs(x = ""Publication Year"","
-"0","    y = ""Log response ratio (LRR)"", size = ""Precision (1/SE)"") +"
-"0","    theme_classic()"
